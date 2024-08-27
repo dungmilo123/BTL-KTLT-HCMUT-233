@@ -171,6 +171,7 @@ void displayHistory(string history, int numOfMoves) {
             game[i][j] = NA;
         }
     }
+    //testing
     displayBoard(game, MAX_SIZE);
     int currentMoveIndex = -1;
     cout << inputCommand;
