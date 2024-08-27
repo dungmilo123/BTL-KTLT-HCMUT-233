@@ -171,9 +171,20 @@ void displayHistory(string history, int numOfMoves) {
             game[i][j] = NA;
         }
     }
-    //testing
     displayBoard(game, MAX_SIZE);
     int currentMoveIndex = -1;
+     string moves[225];
+    int moveCount = 0;
+    size_t pos = 0;
+    while (pos < history.length() && moveCount < numOfMoves) {
+        size_t len = 1;
+        while (isdigit(history[pos + len])) {
+            len++;
+        }
+        len++;
+        moves[moveCount++] = history.substr(pos, len);
+        pos += len;
+    }
     cout << inputCommand;
 
     char userInput;
@@ -181,7 +192,7 @@ void displayHistory(string history, int numOfMoves) {
         if (userInput == 'n') {
             if (currentMoveIndex < numOfMoves - 1) {
                 currentMoveIndex++;
-                string move = history.substr(currentMoveIndex * 2, 2);
+                string move = moves[currentMoveIndex];
                 makeMove(game, MAX_SIZE, move, currentMoveIndex % 2 == 0);
                 displayBoard(game, MAX_SIZE);
             } else {
@@ -189,7 +200,7 @@ void displayHistory(string history, int numOfMoves) {
             }
         } else if (userInput == 'p') {
             if (currentMoveIndex >= 0) {
-                string move = history.substr(currentMoveIndex * 2, 2);
+                string move = moves[currentMoveIndex];
                 int row = stoi(move.substr(0, move.length() - 1));
                 char colChar = move[move.length() - 1];
                 int col = colChar - 'a';
@@ -209,6 +220,7 @@ void displayHistory(string history, int numOfMoves) {
     }
     //END TODO
 }
+    
 
 
 void startGame() {
