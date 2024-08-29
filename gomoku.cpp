@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <iomanip>
+#include<vector>
 using namespace std;
 
 #define MAX_SIZE 15
@@ -75,96 +76,130 @@ bool makeMove(Stone board[][MAX_SIZE], int size, string playerMove, bool isFirst
     int row = stoi(playerMove.substr(0, playerMove.length() - 1));
     char colChar = playerMove[playerMove.length() - 1];
     int col = colChar - 'a';
-    row = size - row;   
+    row = size - row;
     if (row < 0 || row >= size || col < 0 || col >= size) return false;
     if (board[row][col] != NA) return false;
     board[row][col] = isFirstPlayerTurn ? X : O;
     return true;
      //END TODO
 }
+
+
 bool hasWon(Stone board[][MAX_SIZE], int size, bool isFirstPlayerTurn) {
-    //BEGIN TODO
     Stone currentStone = isFirstPlayerTurn ? X : O;
     Stone opponentStone = isFirstPlayerTurn ? O : X;
-    auto isBlockedAtEnds = [&](int startX, int startY, int dx, int dy) -> bool {
+
+    // Helper function to check if the line is blocked at both ends
+    auto isBlockedAtBothEnds = [&](int startX, int startY, int dx, int dy) -> bool {
         int beforeX = startX - dx;
         int beforeY = startY - dy;
         int afterX = startX + 5 * dx;
         int afterY = startY + 5 * dy;
-        
+
         bool blockedBefore = (beforeX >= 0 && beforeX < size && beforeY >= 0 && beforeY < size && board[beforeX][beforeY] == opponentStone);
         bool blockedAfter = (afterX >= 0 && afterX < size && afterY >= 0 && afterY < size && board[afterX][afterY] == opponentStone);
-        
-        return blockedBefore && blockedAfter;
+
+        return blockedBefore && blockedAfter; // Return true if blocked at both ends
     };
+
+    // Helper function to check if there's exactly 5 in a row and not part of a longer sequence
+    auto checkLine = [&](int startX, int startY, int dx, int dy) -> bool {
+        for (int i = 0; i <= size - 5; ++i) {
+            int x = startX + i * dx;
+            int y = startY + i * dy;
+
+            // Check if there's exactly 5 in a row
+            int count = 0;
+            while (count < 5 && x + count * dx < size && x + count * dx >= 0 &&
+                   y + count * dy < size && y + count * dy >= 0 &&
+                   board[x + count * dx][y + count * dy] == currentStone) {
+                count++;
+            }
+
+            // If we have exactly 5 in a row
+            if (count == 5) {
+                // Check if it's part of a longer sequence
+                bool isExactFive = true;
+                if ((x + 5 * dx < size && x + 5 * dx >= 0 &&
+                     y + 5 * dy < size && y + 5 * dy >= 0 &&
+                     board[x + 5 * dx][y + 5 * dy] == currentStone) ||
+                    (x - dx >= 0 && x - dx < size &&
+                     y - dy >= 0 && y - dy < size &&
+                     board[x - dx][y - dy] == currentStone)) {
+                    isExactFive = false; // There are more than 5 stones in a row
+                }
+
+                // Check for exact 5 stones and if blocked at both ends
+                if (isExactFive && !isBlockedAtBothEnds(x, y, dx, dy)) {
+                    return true; // Exactly 5 stones and not blocked at both ends
+                }
+            }
+        }
+        return false;
+    };
+
+    // Check horizontal lines
     for (int i = 0; i < size; ++i) {
-        for (int j = 0; j <= size - 5; ++j) {
-            int count = 0;
-            for (int k = 0; k < 5; ++k) {
-                if (board[i][j + k] == currentStone) {
-                    count++;
-                } else {
-                    break;
-                }
-            }
-            if (count == 5 && !isBlockedAtEnds(i, j, 0, 1)) {
-                return true;
-            }
+        if (checkLine(i, 0, 0, 1)) {
+            return true;
         }
     }
-    for (int i = 0; i <= size - 5; ++i) {
-        for (int j = 0; j < size; ++j) {
-            int count = 0;
-            for (int k = 0; k < 5; ++k) {
-                if (board[i + k][j] == currentStone) {
-                    count++;
-                } else {
-                    break;
-                }
-            }
-            if (count == 5 && !isBlockedAtEnds(i, j, 1, 0)) {
-                return true;
-            }
+
+    // Check vertical lines
+    for (int j = 0; j < size; ++j) {
+        if (checkLine(0, j, 1, 0)) {
+            return true;
         }
     }
-    for (int i = 0; i <= size - 5; ++i) {
-        for (int j = 0; j <= size - 5; ++j) {
-            int count = 0;
-            for (int k = 0; k < 5; ++k) {
-                if (board[i + k][j + k] == currentStone) {
-                    count++;
-                } else {
-                    break;
-                }
-            }
-            if (count == 5 && !isBlockedAtEnds(i, j, 1, 1)) {
-                return true;
-            }
+
+    // Check diagonal from top-left to bottom-right
+    for (int i = 0; i < size; ++i) {
+        if (checkLine(i, 0, 1, 1)) {
+            return true;
+        }
+        if (checkLine(0, i, 1, 1)) {
+            return true;
         }
     }
-    for (int i = 0; i <= size - 5; ++i) {
-        for (int j = 4; j < size; ++j) {
-            int count = 0;
-            for (int k = 0; k < 5; ++k) {
-                if (board[i + k][j - k] == currentStone) {
-                    count++;
-                } else {
-                    break;
-                }
-            }
-            if (count == 5 && !isBlockedAtEnds(i, j, 1, -1)) {
-                return true;
-            }
+
+    // Check diagonal from bottom-left to top-right
+    for (int i = 0; i < size; ++i) {
+        if (checkLine(i, 0, 1, -1)) {
+            return true;
+        }
+        if (checkLine(size - 1, i, 1, -1)) {
+            return true;
+        }
+    }
+
+    // Check diagonal from top-right to bottom-left
+    for (int i = 0; i < size; ++i) {
+        if (checkLine(i, size - 1, 1, -1)) {
+            return true;
+        }
+        if (checkLine(0, size - 1 - i, 1, -1)) {
+            return true;
+        }
+    }
+
+    // Check diagonal from bottom-right to top-left
+    for (int i = 0; i < size; ++i) {
+        if (checkLine(size - 1, i, -1, -1)) {
+            return true;
+        }
+        if (checkLine(i, size - 1, -1, -1)) {
+            return true;
         }
     }
 
     return false;
-    //END TODO
 }
 
 
+
+
 void displayHistory(string history, int numOfMoves) {
-    //BEGIN TODO
+    //BEGIN
     Stone game[MAX_SIZE][MAX_SIZE];
     for (int i = 0; i < MAX_SIZE; ++i) {
         for (int j = 0; j < MAX_SIZE; ++j) {
@@ -173,7 +208,7 @@ void displayHistory(string history, int numOfMoves) {
     }
     displayBoard(game, MAX_SIZE);
     int currentMoveIndex = -1;
-     string moves[225];
+    string moves[225];
     int moveCount = 0;
     size_t pos = 0;
     while (pos < history.length() && moveCount < numOfMoves) {
@@ -218,10 +253,8 @@ void displayHistory(string history, int numOfMoves) {
         }
         cout << inputCommand;
     }
-    //END TODO
+    //ENDTODO
 }
-    
-
 
 void startGame() {
     Stone game[15][15];
@@ -253,6 +286,8 @@ void startGame() {
         }
     }
 }
+
+
 
 int main()
 {
