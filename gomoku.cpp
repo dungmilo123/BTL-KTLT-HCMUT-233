@@ -206,7 +206,7 @@ void displayHistory(string history, int numOfMoves) {
             game[i][j] = NA;
         }
     }
-    displayBoard(game, MAX_SIZE);
+    displayBoardSimple(game, MAX_SIZE);
     int currentMoveIndex = -1;
     string moves[225];
     int moveCount = 0;
@@ -229,7 +229,7 @@ void displayHistory(string history, int numOfMoves) {
                 currentMoveIndex++;
                 string move = moves[currentMoveIndex];
                 makeMove(game, MAX_SIZE, move, currentMoveIndex % 2 == 0);
-                displayBoard(game, MAX_SIZE);
+                displayBoardSimple(game, MAX_SIZE);
             } else {
                 cout << endOfHistory;
             }
@@ -242,7 +242,7 @@ void displayHistory(string history, int numOfMoves) {
                 row = MAX_SIZE - row;
                 game[row][col] = NA;
                 currentMoveIndex--;
-                displayBoard(game, MAX_SIZE);
+                displayBoardSimple(game, MAX_SIZE);
             } else {
                 cout << startOfGame;
             }
@@ -263,7 +263,7 @@ void startGame() {
             game[i][j] = NA;
         }
     }
-    displayBoard(game, MAX_SIZE);
+    displayBoardSimple(game, MAX_SIZE);
     string playerMove;
     bool player1Turn = true;
     cout << "Player 1 turn: ";
@@ -274,12 +274,12 @@ void startGame() {
         }
         else if(makeMove(game, MAX_SIZE, playerMove, player1Turn)){
             if(hasWon(game, MAX_SIZE, player1Turn)) {
-                displayBoard(game, MAX_SIZE);
+                displayBoardSimple(game, MAX_SIZE);
                 cout << ((player1Turn) ? "Player 1 won " : "Player 2 won ");
                 return;
             }
             player1Turn = !player1Turn;
-            displayBoard(game, MAX_SIZE);
+            displayBoardSimple(game, MAX_SIZE);
             cout << ((player1Turn) ? "Player 1 turn: " : "Player 2 turn: ");
         } else {
             cout << "Illegal move, please try again: ";
